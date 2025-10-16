@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option java_package = "GeorgeFiji";
+option java_outer_classname = "NodeProto";
+
+service NodeService {
+  rpc SendElection(MessageRequest) returns (MessageResponse);
+  rpc SendLeader (MessageRequest) returns (MessageResponse);
+  rpc SetNext(MessageRequest) returns (MessageResponse);
+}
+
+service PeerRegisterService {
+  rpc RegisterNode(RegisterRequest) returns (MessageResponse);
+}
+
+message MessageRequest {
+  int32 origin = 1;
+  int32 message = 2;
+}
+
+message RegisterRequest {
+  int32 nodeId = 1;
+  int32 port = 2;
+}
+
+message MessageResponse {
+  int32 ack = 1;
+}
