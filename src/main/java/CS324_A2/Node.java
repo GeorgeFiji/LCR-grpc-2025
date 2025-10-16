@@ -1,6 +1,7 @@
 package CS324_A2;
 
 import GeorgeFiji.NodeProto.RegisterRequest;
+import GeorgeFiji.NodeProto.MessageRequest;
 import GeorgeFiji.PeerRegisterServiceGrpc;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -79,7 +80,7 @@ public class Node {
     /**
      * Handles user commands for initiating elections or shutting down the node.
      * Commands:
-     *   - "election": Starts the LCR leader election from this node
+     *   - "election": Triggers election in ALL registered nodes via PeerRegister
      *   - "exit": Cleanly shuts down the node and exits
      */
     public void handleUserInput() {
@@ -89,8 +90,19 @@ public class Node {
             String input = scanner.nextLine().trim();
             
             if (input.equalsIgnoreCase("election")) {
-                // Initiate LCR election by sending this node's ID around the ring
-                serviceImpl.startElection();
+                // Broadcast election start to ALL registered nodes via PeerRegister
+                System.out.println("Node " + nodeId + ": Requesting PeerRegister to start election in all nodes...");
+                try {
+                    PeerRegisterServiceGrpc.PeerRegisterServiceBlockingStub registerStub = 
+                        PeerRegisterServiceGrpc.newBlockingStub(registerChannel);
+                    registerStub.broadcastElectionStart(MessageRequest.newBuilder()
+                            .setOrigin(nodeId)
+                            .setMessage(0)
+                            .build());
+                    System.out.println("Node " + nodeId + ": Election broadcast sent to PeerRegister");
+                } catch (Exception e) {
+                    System.err.println("Node " + nodeId + ": Failed to broadcast election: " + e.getMessage());
+                }
             } else if (input.equalsIgnoreCase("exit")) {
                 // Clean shutdown: close server, service, and channels
                 server.shutdown();

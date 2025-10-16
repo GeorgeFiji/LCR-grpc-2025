@@ -122,6 +122,53 @@ public class PeerRegister extends PeerRegisterServiceGrpc.PeerRegisterServiceImp
     }
 
     /**
+     * broadcastElectionStart: Called when a node initiates election.
+     * Triggers ALL registered nodes to start election concurrently.
+     * 
+     * @param request Contains the originating node ID
+     * @param responseObserver Used to send acknowledgment
+     */
+    @Override
+    public void broadcastElectionStart(MessageRequest request, StreamObserver<MessageResponse> responseObserver) {
+        int originNode = request.getOrigin();
+        System.out.println("\n=== PeerRegister: Broadcasting election start to all " + registeredNodes.size() + " nodes ===");
+        System.out.println("    (initiated by Node " + originNode + ")\n");
+        
+        // Trigger election on ALL registered nodes
+        for (int nodeId : registeredNodes) {
+            try {
+                // Create temporary channel to the node
+                ManagedChannel channel = ManagedChannelBuilder
+                        .forAddress("127.0.0.1", 50000 + nodeId)
+                        .usePlaintext()
+                        .build();
+                
+                // Create stub to call the node's triggerElection() method
+                NodeServiceGrpc.NodeServiceBlockingStub stub = NodeServiceGrpc.newBlockingStub(channel);
+                
+                // Call triggerElection() on the node
+                stub.triggerElection(MessageRequest.newBuilder()
+                        .setOrigin(0)  // Origin=0 indicates PeerRegister
+                        .setMessage(0)
+                        .build());
+                
+                System.out.println("PeerRegister: Triggered election on Node " + nodeId);
+                
+                // Close the temporary channel
+                channel.shutdown();
+            } catch (Exception e) {
+                System.err.println("PeerRegister: Failed to trigger election on Node " + nodeId + ": " + e.getMessage());
+            }
+        }
+        
+        System.out.println("\n=== PeerRegister: Election broadcast complete ===\n");
+        
+        // Send acknowledgment
+        responseObserver.onNext(MessageResponse.newBuilder().setAck(1).build());
+        responseObserver.onCompleted();
+    }
+
+    /**
      * Main entry point: Starts the PeerRegister gRPC server.
      * 
      * The server listens on port 50099 for node registrations.

@@ -139,7 +139,10 @@ public class NodeServiceImpl extends NodeServiceGrpc.NodeServiceImplBase {
     /**
      * startElection: Initiates a new leader election from this node.
      * Sends ELECTION(myId) to the next node in the ring.
-     * Called when user types "election" command.
+     * 
+     * Called in two scenarios:
+     * 1. Automatically when ring topology is established (all nodes participate concurrently)
+     * 2. Manually when user types "election" command (can trigger a new election)
      */
     public void startElection() {
         System.out.println("\nNode " + nodeId + ": Starting election...\n");
@@ -158,6 +161,32 @@ public class NodeServiceImpl extends NodeServiceGrpc.NodeServiceImplBase {
             // Ring not yet configured - cannot start election
             System.err.println("Node " + nodeId + ": Cannot start election - no next node");
         }
+    }
+
+    /**
+     * TriggerElection: Called by PeerRegister to make this node start election.
+     * This is used when one node initiates election and PeerRegister broadcasts to all nodes.
+     * 
+     * @param request Contains trigger message (not used)
+     * @param responseObserver Used to send acknowledgment
+     */
+    @Override
+    public void triggerElection(MessageRequest request, StreamObserver<MessageResponse> responseObserver) {
+        System.out.println("Node " + nodeId + ": Received trigger to start election from PeerRegister");
+        
+        // Start election in a separate thread to avoid blocking the RPC
+        new Thread(() -> {
+            try {
+                Thread.sleep(100); // Small stagger to avoid all nodes sending at exact same time
+                startElection();
+            } catch (Exception e) {
+                System.err.println("Node " + nodeId + ": Failed to start election: " + e.getMessage());
+            }
+        }).start();
+        
+        // Send acknowledgment
+        responseObserver.onNext(MessageResponse.newBuilder().setAck(1).build());
+        responseObserver.onCompleted();
     }
 
     /**

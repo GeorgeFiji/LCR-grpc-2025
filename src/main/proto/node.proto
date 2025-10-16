@@ -7,10 +7,12 @@ service NodeService {
   rpc SendElection(MessageRequest) returns (MessageResponse);
   rpc SendLeader (MessageRequest) returns (MessageResponse);
   rpc SetNext(MessageRequest) returns (MessageResponse);
+  rpc TriggerElection(MessageRequest) returns (MessageResponse);
 }
 
 service PeerRegisterService {
   rpc RegisterNode(RegisterRequest) returns (MessageResponse);
+  rpc BroadcastElectionStart(MessageRequest) returns (MessageResponse);
 }
 
 message MessageRequest {
