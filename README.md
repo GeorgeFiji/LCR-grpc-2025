@@ -2,7 +2,7 @@
 
 **Author:** George Fong  
 **Package:** GeorgeFiji  
-**Technology:** Java + gRPC + Protocol Buffers
+**Technology:** Java 21 + gRPC 1.57.2 (OkHttp) + Protocol Buffers
 
 ## Overview
 
@@ -10,7 +10,8 @@ This project implements the **LCR (LeCann-Chang-Roberts) Leader Election Protoco
 
 - **Ring Topology:** Nodes arranged in a unidirectional ring (each node knows only its successor)
 - **Leader Election:** The node with the highest ID is elected as leader
-- **Communication:** gRPC-based message passing
+- **Communication:** gRPC-based message passing with OkHttp transport
+- **Automatic Registration:** Nodes automatically register with PeerRegister on startup
 
 ## Algorithm Description
 
@@ -54,13 +55,27 @@ Consider 4 nodes with IDs: **5, 11, 2, 7**
 
 ## Prerequisites
 
-✅ **Java JDK 24** (or higher)  
+✅ **Java JDK 21** (⚠️ **IMPORTANT:** Java 22 and 24 have compatibility issues with gRPC!)  
 ✅ **Maven 3.9+**  
 ✅ **Windows PowerShell**
 
+### Why Java 21?
+
+Java 22 and 24 introduced breaking changes in their network stack that cause `UnsupportedAddressTypeException` with gRPC on Windows. Java 21 is the latest stable version that works correctly with gRPC.
+
+**To install Java 21:** Download from [Oracle Java 21](https://www.oracle.com/java/technologies/downloads/#java21) or [Adoptium OpenJDK 21](https://adoptium.net/temurin/releases/?version=21)
+
 ## Quick Start (5 Minutes)
 
-### Step 1: Build the Project
+### Step 1: Set Java 21 Environment
+
+```powershell
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"
+$env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH
+java -version  # Should show Java 21
+```
+
+### Step 2: Build the Project
 
 ```powershell
 mvn clean package -DskipTests
@@ -79,7 +94,7 @@ You need **9 terminals**:
 ### Step 3: Start PeerRegister (Terminal 1)
 
 ```powershell
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.PeerRegister
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.PeerRegister
 ```
 
 ✅ **Expected Output:**
@@ -90,32 +105,38 @@ Ready to accept node registrations
 
 ### Step 4: Start 8 Nodes (Terminals 2-9)
 
-**⚠️ Important:** Wait **2 seconds** between starting each node
+**⚠️ Important:** Wait **2 seconds** between starting each node to allow proper registration
+
+**Use this command for each node (change the number at the end):**
 
 ```powershell
-# Terminal 2
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 1
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 1
+```
 
-# Terminal 3
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 2
+```powershell
+# Terminal 2 - Node 1
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 1
 
-# Terminal 4
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 3
+# Terminal 3 - Node 2
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 2
 
-# Terminal 5
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 4
+# Terminal 4 - Node 3
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 3
 
-# Terminal 6
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 5
+# Terminal 5 - Node 4
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 4
 
-# Terminal 7
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 6
+# Terminal 6 - Node 5
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 5
 
-# Terminal 8
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 7
+# Terminal 7 - Node 6
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 6
 
-# Terminal 9
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 8
+# Terminal 8 - Node 7
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 7
+
+# Terminal 9 - Node 8
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 8
 ```
 
 ✅ **Expected Output (Each Node):**
@@ -195,7 +216,7 @@ You need **9 terminal windows**: 1 for PeerRegister + 8 for Nodes
 #### Step 1: Start PeerRegister (Terminal 1)
 
 ```powershell
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.PeerRegister
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.PeerRegister
 ```
 
 Expected output:
@@ -209,29 +230,29 @@ Ready to accept node registrations
 **Important:** Wait 2 seconds between starting each node to allow proper registration.
 
 ```powershell
-# Terminal 2
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 1
+# Terminal 2 - Node 1
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 1
 
-# Terminal 3
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 2
+# Terminal 3 - Node 2
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 2
 
-# Terminal 4
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 3
+# Terminal 4 - Node 3
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 3
 
-# Terminal 5
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 4
+# Terminal 5 - Node 4
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 4
 
-# Terminal 6
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 5
+# Terminal 6 - Node 5
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 5
 
-# Terminal 7
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 6
+# Terminal 7 - Node 6
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 6
 
-# Terminal 8
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 7
+# Terminal 8 - Node 7
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 7
 
-# Terminal 9
-java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 8
+# Terminal 9 - Node 8
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH; java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 8
 ```
 
 Expected output for each node:
@@ -267,7 +288,9 @@ election
 You can use any unique integer IDs:
 
 ```powershell
-# Example with different IDs
+# Example with different IDs (remember to set Java 21 environment first!)
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH
+
 java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 5
 java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 11
 java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 2
@@ -278,7 +301,7 @@ java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS3
 java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 75
 ```
 
-The node with **ID 100** will be elected as leader.
+The node with **ID 100** will be elected leader.
 
 ## What Happens During Election?
 
@@ -363,10 +386,12 @@ Once nodes are running:
 
 | Problem | Solution |
 |---------|----------|
-| ❌ "Node X failed to register" | ✅ Start PeerRegister first (Terminal 1) |
+| ❌ "UnsupportedAddressTypeException" | ✅ **Use Java 21!** Java 22/24 have network compatibility issues |
+| ❌ "Node X failed to register" | ✅ Start PeerRegister first; Check Java 21 is being used |
 | ❌ "Node X is already registered" | ✅ Each node needs a unique ID |
 | ❌ "Cannot start election - no next node" | ✅ Wait for "Ring topology complete!" in PeerRegister |
-| ❌ Maven build fails | ✅ Run `mvn clean package -DskipTests` |
+| ❌ "invalid target release: 21" | ✅ Verify `JAVA_HOME` points to JDK 21 |
+| ❌ Maven build fails | ✅ Run `mvn clean package -DskipTests` with Java 21 |
 | ⚠️ Build warnings (generated code) | ✅ Safe to ignore |
 
 ## Common Issues
@@ -389,6 +414,9 @@ netstat -ano | findstr "5000X"
 You can use **any unique integer IDs**:
 
 ```powershell
+# Set Java 21 environment first
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"; $env:PATH="C:\Program Files\Java\jdk-21\bin;" + $env:PATH
+
 # Example: Random IDs
 java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 5
 java -cp target/a2-election-algorithm-1.0-SNAPSHOT-jar-with-dependencies.jar CS324_A2.Node 11
@@ -443,11 +471,16 @@ service PeerRegisterService {
 | Component | Details |
 |-----------|---------|
 | **Communication** | gRPC (synchronous blocking stubs) |
+| **Transport** | OkHttp (client), Netty (server) |
 | **Serialization** | Protocol Buffers |
 | **Package Name** | GeorgeFiji (custom) |
-| **Java Version** | 24 |
+| **Java Version** | 21 LTS ⚠️ **Required** |
 | **gRPC Version** | 1.57.2 |
 | **Protobuf Version** | 3.21.12 |
+
+### Why OkHttp Transport?
+
+Java 22 and 24 introduced breaking changes in `java.nio.channels` that cause `UnsupportedAddressTypeException` with Netty transport on Windows. Using OkHttp for client channels avoids this issue while maintaining full gRPC compatibility.
 
 ## Project Files
 
@@ -476,14 +509,46 @@ CS324 A2/
 - [ ] Node with highest ID declared leader
 - [ ] All nodes received leader announcement
 
+## Important Notes About Java Versions ⚠️
+
+### Java 21 is Required!
+
+This project **MUST** use Java 21. Java 22 and 24 have breaking changes that cause runtime failures:
+
+**Error with Java 22/24:**
+```
+java.nio.channels.UnsupportedAddressTypeException
+    at java.base/sun.nio.ch.Net.checkAddress(Net.java:135)
+```
+
+**Why this happens:**
+- Java 22+ changed how network addresses are handled
+- gRPC's Netty transport attempts to use Unix domain sockets
+- Unix domain sockets are not supported on Windows
+- OkHttp transport + Java 21 is the working solution
+
+**To verify your Java version:**
+```powershell
+java -version
+# Should show: java version "21.0.x"
+```
+
+**To set Java 21 permanently (System-wide):**
+1. Open System Properties → Environment Variables
+2. Set `JAVA_HOME` = `C:\Program Files\Java\jdk-21`
+3. Update `PATH` to include `%JAVA_HOME%\bin` at the beginning
+4. Restart all terminals
+
 ## Resources
 
 - **LCR Algorithm:** LeLann-Chang-Roberts Leader Election
 - **gRPC Documentation:** https://grpc.io/
 - **Protocol Buffers:** https://protobuf.dev/
+- **Java 21 Download:** https://www.oracle.com/java/technologies/downloads/#java21
 
 ---
 
 **Assignment:** CS324 Assignment 2  
 **Author:** George Fong  
-**Implementation:** Java + gRPC + Protocol Buffers
+**Implementation:** Java 21 + gRPC 1.57.2 (OkHttp) + Protocol Buffers  
+**Package:** GeorgeFiji
