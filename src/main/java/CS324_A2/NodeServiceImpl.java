@@ -22,7 +22,7 @@ public class NodeServiceImpl extends NodeServiceGrpc.NodeServiceImplBase {
     public void setNext(MessageRequest request, StreamObserver<MessageResponse> responseObserver) {
         int nextNodeId = request.getMessage();
         this.nextNodeChannel = ManagedChannelBuilder
-                .forAddress("localhost", 50000 + nextNodeId)
+                .forAddress("127.0.0.1", 50000 + nextNodeId)
                 .usePlaintext()
                 .build();
         this.nextNodeStub = NodeServiceGrpc.newBlockingStub(nextNodeChannel);

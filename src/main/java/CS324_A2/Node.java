@@ -31,7 +31,7 @@ public class Node {
         try {
             Thread.sleep(500);
             registerChannel = ManagedChannelBuilder
-                    .forAddress("localhost", 50099)
+                    .forAddress("127.0.0.1", 50099)
                     .usePlaintext()
                     .build();
             
@@ -46,7 +46,8 @@ public class Node {
             stub.registerNode(request);
             System.out.println("Node " + nodeId + " registered with PeerRegister successfully");
         } catch (Exception e) {
-            System.err.println("Node " + nodeId + " failed to register: " + e.getMessage());
+            System.err.println("Node " + nodeId + " failed to register: " + e.getClass().getName() + " - " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
