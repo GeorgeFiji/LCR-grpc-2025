@@ -4,10 +4,7 @@ target/
 !**/src/test/**/target/
 
 ### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -34,5 +31,12 @@ build/
 ### VS Code ###
 .vscode/
 
+### Maven ###
+.mvn/
+
 ### Mac OS ###
 .DS_Store
+
+### Generated gRPC/Protobuf files ###
+**/GeorgeFiji/*Grpc.java
+src/main/java/CS324_A2/*Grpc.java
