@@ -72,8 +72,9 @@ public class NodeServiceImpl extends NodeServiceGrpc.NodeServiceImplBase {
      */
     @Override
     public void sendElection(MessageRequest request, StreamObserver<MessageResponse> responseObserver) {
+        int originId = request.getOrigin();
         int candidateId = request.getMessage();
-        System.out.println("Node " + nodeId + ": Received ELECTION(" + candidateId + ")");
+        System.out.println("Node " + nodeId + ": Received ELECTION(candidateId=" + candidateId + ", originNode=" + originId + ")");
         
         // CASE 1: This is my own ID coming back - I'm the leader!
         if (candidateId == nodeId) {
@@ -82,6 +83,7 @@ public class NodeServiceImpl extends NodeServiceGrpc.NodeServiceImplBase {
             
             // Send LEADER announcement around the ring once
             if (nextNodeStub != null) {
+                System.out.println("Node " + nodeId + ": Sending LEADER(winnerId=" + nodeId + ") announcement");
                 nextNodeStub.sendLeader(MessageRequest.newBuilder()
                         .setOrigin(nodeId)
                         .setMessage(nodeId)
@@ -90,17 +92,17 @@ public class NodeServiceImpl extends NodeServiceGrpc.NodeServiceImplBase {
         } 
         // CASE 2: Candidate ID is larger than mine - forward it
         else if (candidateId > nodeId) {
-            System.out.println("Node " + nodeId + ": Forwarding ELECTION(" + candidateId + ")");
+            System.out.println("Node " + nodeId + ": Forwarding ELECTION(candidateId=" + candidateId + ", originNode=" + originId + ") to next node");
             if (nextNodeStub != null) {
                 nextNodeStub.sendElection(MessageRequest.newBuilder()
-                        .setOrigin(request.getOrigin())
+                        .setOrigin(originId)
                         .setMessage(candidateId)
                         .build());
             }
         } 
         // CASE 3: Candidate ID is smaller than mine - drop it
         else {
-            System.out.println("Node " + nodeId + ": Dropped ELECTION(" + candidateId + ")");
+            System.out.println("Node " + nodeId + ": Dropped ELECTION(candidateId=" + candidateId + ", originNode=" + originId + ") - my ID is larger");
             // Do nothing - message is not forwarded
         }
         
@@ -119,14 +121,19 @@ public class NodeServiceImpl extends NodeServiceGrpc.NodeServiceImplBase {
      */
     @Override
     public void sendLeader(MessageRequest request, StreamObserver<MessageResponse> responseObserver) {
+        int winnerId = request.getMessage();
+        int originId = request.getOrigin();
+        
         // Only process this announcement once
         if (!leaderAnnounced) {
             leaderAnnounced = true;
-            System.out.println("Node " + nodeId + ": Leader is Node " + request.getMessage());
+            System.out.println("Node " + nodeId + ": Received LEADER announcement (winnerId=" + winnerId + ", announcedBy=" + originId + ")");
+            System.out.println("Node " + nodeId + ": ✓ Node " + winnerId + " is the LEADER");
             
             // Forward the announcement to next node (unless I'm the leader)
             // The leader node doesn't forward to prevent infinite loop
             if (!isLeader && nextNodeStub != null) {
+                System.out.println("Node " + nodeId + ": Forwarding LEADER announcement to next node");
                 nextNodeStub.sendLeader(request);
             }
         }
@@ -145,7 +152,9 @@ public class NodeServiceImpl extends NodeServiceGrpc.NodeServiceImplBase {
      * 2. Manually when user types "election" command (can trigger a new election)
      */
     public void startElection() {
-        System.out.println("\nNode " + nodeId + ": Starting election...\n");
+        System.out.println("\n==========================================================");
+        System.out.println("Node " + nodeId + ": Starting election - sending my ID as candidate");
+        System.out.println("==========================================================\n");
         
         // Reset flags for new election
         leaderAnnounced = false;
@@ -153,6 +162,7 @@ public class NodeServiceImpl extends NodeServiceGrpc.NodeServiceImplBase {
         
         if (nextNodeStub != null) {
             // Send my ID as a candidate around the ring
+            System.out.println("Node " + nodeId + ": Sending ELECTION(candidateId=" + nodeId + ", originNode=" + nodeId + ") to next node");
             nextNodeStub.sendElection(MessageRequest.newBuilder()
                     .setOrigin(nodeId)
                     .setMessage(nodeId)  // My ID is the candidate
@@ -172,7 +182,7 @@ public class NodeServiceImpl extends NodeServiceGrpc.NodeServiceImplBase {
      */
     @Override
     public void triggerElection(MessageRequest request, StreamObserver<MessageResponse> responseObserver) {
-        System.out.println("Node " + nodeId + ": Received trigger to start election from PeerRegister");
+        System.out.println("Node " + nodeId + ": ⚡ Received election trigger from PeerRegister - will participate in election");
         
         // Start election in a separate thread to avoid blocking the RPC
         new Thread(() -> {
