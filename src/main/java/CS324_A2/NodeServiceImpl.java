@@ -20,6 +20,7 @@ import io.grpc.stub.StreamObserver;
  */
 public class NodeServiceImpl extends NodeServiceGrpc.NodeServiceImplBase {
     private final int nodeId;                          // This node's unique ID
+    private int nextNodeId;                             // The ID of the next node in the ring
     private ManagedChannel nextNodeChannel;             // Channel to successor in ring
     private NodeServiceGrpc.NodeServiceBlockingStub nextNodeStub;  // Stub for RPC calls
     private boolean isLeader = false;                   // True if this node won election
@@ -41,7 +42,7 @@ public class NodeServiceImpl extends NodeServiceGrpc.NodeServiceImplBase {
      */
     @Override
     public void setNext(MessageRequest request, StreamObserver<MessageResponse> responseObserver) {
-        int nextNodeId = request.getMessage();
+        this.nextNodeId = request.getMessage();
         
         // Create gRPC channel to the next node in the ring
         // Uses 127.0.0.1 for explicit IPv4, port = 50000 + nextNodeId
@@ -92,7 +93,7 @@ public class NodeServiceImpl extends NodeServiceGrpc.NodeServiceImplBase {
         } 
         // CASE 2: Candidate ID is larger than mine - forward it
         else if (candidateId > nodeId) {
-            System.out.println("Node " + nodeId + ": Forwarding ELECTION(candidateId=" + candidateId + ", originNode=" + originId + ") to next node");
+            System.out.println("Node " + nodeId + ": Forwarding ELECTION(candidateId=" + candidateId + ", originNode=" + originId + ") to next node " + nextNodeId);
             if (nextNodeStub != null) {
                 nextNodeStub.sendElection(MessageRequest.newBuilder()
                         .setOrigin(originId)
@@ -133,7 +134,7 @@ public class NodeServiceImpl extends NodeServiceGrpc.NodeServiceImplBase {
             // Forward the announcement to next node (unless I'm the leader)
             // The leader node doesn't forward to prevent infinite loop
             if (!isLeader && nextNodeStub != null) {
-                System.out.println("Node " + nodeId + ": Forwarding LEADER announcement to next node");
+                System.out.println("Node " + nodeId + ": Forwarding LEADER announcement to next node " + nextNodeId);
                 nextNodeStub.sendLeader(request);
             }
         }
@@ -162,7 +163,7 @@ public class NodeServiceImpl extends NodeServiceGrpc.NodeServiceImplBase {
         
         if (nextNodeStub != null) {
             // Send my ID as a candidate around the ring
-            System.out.println("Node " + nodeId + ": Sending ELECTION(candidateId=" + nodeId + ", originNode=" + nodeId + ") to next node");
+            System.out.println("Node " + nodeId + ": Sending ELECTION(candidateId=" + nodeId + ", originNode=" + nodeId + ") to next node " + nextNodeId);
             nextNodeStub.sendElection(MessageRequest.newBuilder()
                     .setOrigin(nodeId)
                     .setMessage(nodeId)  // My ID is the candidate
