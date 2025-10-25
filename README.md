@@ -1,6 +1,7 @@
 # LCR Leader Election Algorithm - gRPC Implementation
 
-**Author:** George Fong  
+**Author:** George Fong, Jash Bhavsar, Pranav Kumar and Lavinia Siliva
+
 **Package:** GeorgeFiji  
 **Technology:** Java 21 + gRPC 1.57.2 (OkHttp) + Protocol Buffers
 
