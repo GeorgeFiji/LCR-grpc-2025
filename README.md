@@ -550,6 +550,6 @@ java -version
 ---
 
 **Assignment:** CS324 Assignment 2  
-**Author:** George Fong  
+**Author:** George Fong, Jash Bhavsar, Pranav Kumar and Lavinia Siliva 
 **Implementation:** Java 21 + gRPC 1.57.2 (OkHttp) + Protocol Buffers  
 **Package:** GeorgeFiji
